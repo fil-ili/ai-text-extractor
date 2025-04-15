@@ -17,21 +17,23 @@ import { copyToClipboard } from '@/utils/copyToClipboard';
 
 export default function HomeScreen(): JSX.Element {
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [shouldClear, setShouldClear] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function pickImage(): Promise<void> {
     setIsLoading(true);
+    setError(null);
     try {
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-
       if (!permissionResult.granted) {
         console.log('Permission to access camera roll is required!');
-        setIsLoading(false);
         return;
       }
+
       const result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
         base64: true,
@@ -40,13 +42,15 @@ export default function HomeScreen(): JSX.Element {
       if (!result.canceled && result.assets?.[0]) {
         const asset = result.assets[0];
         setImageUri(asset.uri);
+        setImageBase64(asset.base64 ?? null);
+
         if (asset.base64) {
-          const replicateResponse = await getTextFromImage(asset.base64);
-          setExtractedText(replicateResponse?.data);
+          await handleExtractText(asset.base64);
         }
       }
-    } catch (error) {
-      console.log('Error picking image:', error);
+    } catch (err) {
+      console.log('Error picking image:', err);
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -54,14 +58,16 @@ export default function HomeScreen(): JSX.Element {
 
   async function captureImage(): Promise<void> {
     setIsLoading(true);
+    setError(null);
     try {
       const cameraPermission =
         await ImagePicker.requestCameraPermissionsAsync();
+
       if (!cameraPermission.granted) {
         console.log('Permission to access camera is required!');
-        setIsLoading(false);
         return;
       }
+
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
         aspect: [4, 3],
@@ -69,18 +75,39 @@ export default function HomeScreen(): JSX.Element {
         allowsEditing: true,
         base64: true,
       });
+
       if (!result.canceled && result.assets?.[0]) {
         const asset = result.assets[0];
         setImageUri(asset.uri);
+        setImageBase64(asset.base64 ?? null);
+
         if (asset.base64) {
-          const replicateResponse = await getTextFromImage(asset.base64);
-          setExtractedText(replicateResponse?.data);
+          await handleExtractText(asset.base64);
         }
       }
-    } catch (error) {
-      console.log('Error capturing image:', error);
+    } catch (err) {
+      console.log('Error capturing image:', err);
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleExtractText(base64: string) {
+    try {
+      const { data, error: modelError } = await getTextFromImage(base64);
+
+      if (modelError) {
+        setError(modelError);
+        setExtractedText(null);
+      } else {
+        setExtractedText(data || ''); // if data is null, store empty string
+        setError(null);
+      }
+    } catch (err) {
+      console.log('Error extracting text:', err);
+      setError('Something went wrong. Please try again.');
+      setExtractedText(null);
     }
   }
 
@@ -99,23 +126,35 @@ export default function HomeScreen(): JSX.Element {
   }
 
   async function handleOnCopy() {
-    if (extractedText) {
-      if (extractedText !== 'Invalid' && extractedText.length > 0) {
-        await copyToClipboard(extractedText);
-      } else {
-        console.log('Invalid text, cannot copy to clipboard');
-      }
+    if (extractedText && extractedText.length > 0) {
+      await copyToClipboard(extractedText);
+    } else {
+      console.log('No text to copy');
     }
   }
 
   useEffect(() => {
     if (shouldClear) {
       setImageUri(null);
+      setImageBase64(null);
       setExtractedText(null);
-      setShouldClear(false);
+      setError(null);
       setShouldClear(false);
     }
   }, [shouldClear]);
+
+  async function handleRetry() {
+    if (!imageBase64) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      await handleExtractText(imageBase64);
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -140,11 +179,24 @@ export default function HomeScreen(): JSX.Element {
 
         {isLoading && <ActivityIndicator style={styles.loadingIndicator} />}
 
-        {extractedText && extractedText !== 'Invalid' && !isLoading && (
+        {extractedText && extractedText.length > 0 && !isLoading && (
           <View style={styles.textContainer}>
             <View style={styles.card}>
               <Text style={styles.cardText}>{extractedText}</Text>
             </View>
+          </View>
+        )}
+
+        {error && (
+          <View style={styles.retryContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={handleRetry}
+              disabled={isLoading}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
@@ -177,17 +229,18 @@ export default function HomeScreen(): JSX.Element {
         <TouchableOpacity
           style={[
             styles.fabIcon,
-            (!extractedText || extractedText === 'Invalid') &&
-              styles.disabledFab,
+            !extractedText || extractedText.length === 0
+              ? styles.disabledFab
+              : null,
           ]}
           onPress={handleOnCopy}
-          disabled={!extractedText || extractedText === 'Invalid'}
+          disabled={!extractedText || extractedText.length === 0}
         >
           <Ionicons
             name='copy-outline'
             size={20}
             color={
-              !extractedText || extractedText === 'Invalid' ? '#ccc' : '#333'
+              !extractedText || extractedText.length === 0 ? '#ccc' : '#333'
             }
           />
         </TouchableOpacity>
@@ -277,5 +330,26 @@ const styles = StyleSheet.create({
   },
   disabledFab: {
     opacity: 0.5,
+  },
+  retryContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 8,
+    fontWeight: 'bold',
+  },
+  retryButton: {
+    backgroundColor: '#f00',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: '600',
   },
 });
