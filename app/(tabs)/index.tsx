@@ -1,165 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   Image,
   StyleSheet,
   ActivityIndicator,
-  Alert,
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { getTextFromImage } from '@/utils/getTextFromImage';
-import { copyToClipboard } from '@/utils/copyToClipboard';
+import { useImageOCR } from '@/hooks/useImageOCR';
 
 export default function HomeScreen(): JSX.Element {
-  const [imageUri, setImageUri] = useState<string | null>(null);
-  const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [extractedText, setExtractedText] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [shouldClear, setShouldClear] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function pickImage(): Promise<void> {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const permissionResult =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permissionResult.granted) {
-        console.log('Permission to access camera roll is required!');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        base64: true,
-      });
-
-      if (!result.canceled && result.assets?.[0]) {
-        const asset = result.assets[0];
-        setImageUri(asset.uri);
-        setImageBase64(asset.base64 ?? null);
-
-        if (asset.base64) {
-          await handleExtractText(asset.base64);
-        }
-      }
-    } catch (err) {
-      console.log('Error picking image:', err);
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function captureImage(): Promise<void> {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const cameraPermission =
-        await ImagePicker.requestCameraPermissionsAsync();
-
-      if (!cameraPermission.granted) {
-        console.log('Permission to access camera is required!');
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ['images'],
-        aspect: [4, 3],
-        quality: 1,
-        allowsEditing: true,
-        base64: true,
-      });
-
-      if (!result.canceled && result.assets?.[0]) {
-        const asset = result.assets[0];
-        setImageUri(asset.uri);
-        setImageBase64(asset.base64 ?? null);
-
-        if (asset.base64) {
-          await handleExtractText(asset.base64);
-        }
-      }
-    } catch (err) {
-      console.log('Error capturing image:', err);
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function handleExtractText(base64: string) {
-    try {
-      const { data, error: modelError } = await getTextFromImage(base64);
-
-      if (modelError) {
-        setError(modelError);
-        setExtractedText(null);
-      } else {
-        setExtractedText(data || ''); // if data is null, store empty string
-        setError(null);
-      }
-    } catch (err) {
-      console.log('Error extracting text:', err);
-      setError('Something went wrong. Please try again.');
-      setExtractedText(null);
-    }
-  }
-
-  function handleOnClear() {
-    Alert.alert('Do you want to clear the image?', '', [
-      {
-        text: 'Cancel',
-        onPress: () => console.log('Cancel Pressed'),
-        style: 'cancel',
-      },
-      {
-        text: 'OK',
-        onPress: () => setShouldClear(true),
-      },
-    ]);
-  }
-
-  async function handleOnCopy() {
-    if (extractedText && extractedText.length > 0) {
-      await copyToClipboard(extractedText);
-    } else {
-      console.log('No text to copy');
-    }
-  }
-
-  useEffect(() => {
-    if (shouldClear) {
-      setImageUri(null);
-      setImageBase64(null);
-      setExtractedText(null);
-      setError(null);
-      setShouldClear(false);
-    }
-  }, [shouldClear]);
-
-  async function handleRetry() {
-    if (!imageBase64) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      await handleExtractText(imageBase64);
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const {
+    imageUri,
+    extractedText,
+    isLoading,
+    error,
+    pickImage,
+    captureImage,
+    handleOnCopy,
+    handleOnClear,
+    handleRetry,
+  } = useImageOCR();
 
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Generate Text</Text>
+        <Text style={styles.title}>Text Extractor</Text>
 
         {!imageUri && !isLoading && (
           <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
@@ -167,7 +36,9 @@ export default function HomeScreen(): JSX.Element {
               source={require('../../assets/images/uploadImage.png')}
               style={styles.imagePreview}
             />
-            <Text style={styles.uploadImageHint}>Upload an image to begin</Text>
+            <Text style={styles.uploadImageHint}>
+              Upload an image with text
+            </Text>
           </TouchableOpacity>
         )}
 
