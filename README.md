@@ -1,50 +1,48 @@
-# Welcome to your Expo app 👋
+# AI Text Extractor 📄✨
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**AI Text Extractor** is a React Native app built with [Expo](https://expo.dev), allowing users to scan documents using their **camera or photo library** and extract text using an **AI-powered OCR model** from [Replicate](https://replicate.com).
 
-## Get started
+> ⚠️ The OCR model used is not free, but it's **very affordable**. Perfect for lightweight document parsing tasks.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Features
 
-2. Start the app
+- 📷 Pick or capture an image from your device
+- 🧠 Extract text from the image using Replicate's OCR model
+- 📝 Copy the result to your clipboard
+- 🕓 View your prediction history via Replicate's API
 
-   ```bash
-    npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## Setup
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Install dependencies
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Create a .env file from the provided template
 
-## Learn more
+```bash
+cp .env.example .env
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Then fill in your Replicate API token:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+EXPO_PUBLIC_REPLICATE_API_TOKEN=your_replicate_token_here
+```
 
-## Join the community
+Get your token from [replicate.com/account](http://replicate.com/account)
 
-Join our community of developers creating universal apps.
+### 3. Run the app
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run start
+```
+
+### ✌️ License
+
+MIT – do what you want, just don’t forget to hydrate.
