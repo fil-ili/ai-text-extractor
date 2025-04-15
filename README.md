@@ -43,6 +43,8 @@ Get your token from [replicate.com/account](http://replicate.com/account)
 npm run start
 ```
 
-### ✌️ License
+---
+
+## ✌️ License
 
 MIT – do what you want, just don’t forget to hydrate.
