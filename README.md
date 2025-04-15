@@ -1,6 +1,9 @@
-# AI Text Extractor 📄✨
-
-**AI Text Extractor** is a React Native app built with [Expo](https://expo.dev), allowing users to scan documents using their **camera or photo library** and extract text using an **AI-powered OCR model** from [Replicate](https://replicate.com).
+<div align="center">
+  <h1>AI Text Extractor 📄✨</h1>
+  <p>**AI Text Extractor** is a React Native app built with [Expo](https://expo.dev), allowing users to scan documents using their **camera or photo library** and extract text using an **AI-powered OCR model** from [Replicate](https://replicate.com).
+</p>
+  <img src=".github/ai-text-extractor.gif" alt="AI Text Extractor"/>
+</div>
 
 > ⚠️ The OCR model used is not free, but it's **very affordable**. Perfect for lightweight document parsing tasks.
 
