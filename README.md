@@ -12,6 +12,7 @@
 - 🧠 Extract text from the image using Replicate's OCR model
 - 📝 Copy the result to your clipboard
 - 🕓 View your prediction history via Replicate's API
+- 🗒️ You need to run the app on physical device to use the camera
 
 ---
 

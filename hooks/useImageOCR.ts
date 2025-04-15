@@ -28,6 +28,7 @@ export function useImageOCR(): OCRHook {
   const handleExtractText = useCallback(async (base64: string) => {
     try {
       const { data, error: modelError } = await getTextFromImage(base64);
+
       if (modelError) {
         setError(modelError);
         setExtractedText(null);
@@ -44,21 +45,26 @@ export function useImageOCR(): OCRHook {
   const pickImage = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
     try {
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (!permissionResult.granted) {
         setIsLoading(false);
         return;
       }
+
       const result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
         base64: true,
       });
+
       if (!result.canceled && result.assets?.[0]) {
         const asset = result.assets[0];
         setImageUri(asset.uri);
         setImageBase64(asset.base64 ?? null);
+
         if (asset.base64) {
           await handleExtractText(asset.base64);
         }
@@ -73,13 +79,16 @@ export function useImageOCR(): OCRHook {
   const captureImage = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
     try {
       const cameraPermission =
         await ImagePicker.requestCameraPermissionsAsync();
+
       if (!cameraPermission.granted) {
         setIsLoading(false);
         return;
       }
+
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
         aspect: [4, 3],
@@ -87,10 +96,12 @@ export function useImageOCR(): OCRHook {
         allowsEditing: true,
         base64: true,
       });
+
       if (!result.canceled && result.assets?.[0]) {
         const asset = result.assets[0];
         setImageUri(asset.uri);
         setImageBase64(asset.base64 ?? null);
+
         if (asset.base64) {
           await handleExtractText(asset.base64);
         }
@@ -123,8 +134,10 @@ export function useImageOCR(): OCRHook {
 
   const handleRetry = useCallback(async () => {
     if (!imageBase64) return;
+
     setIsLoading(true);
     setError(null);
+
     try {
       await handleExtractText(imageBase64);
     } catch {

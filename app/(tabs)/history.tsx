@@ -1,3 +1,5 @@
+// HistoryScreen.tsx
+import React, { Fragment, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,36 +10,15 @@ import {
 } from 'react-native';
 import { type Prediction } from 'replicate';
 import { Collapsible } from '@/components/Collapsible';
-import { Fragment, useCallback, useEffect, useState } from 'react';
-import { copyToClipboard } from '@/utils/copyToClipboard';
 import { Separator } from '@/components/Separator';
 import { parseFullDate } from '@/utils/parseFullDate';
 import { useIsFocused } from '@react-navigation/native';
-import { replicate } from '@/core/replicate';
+import { usePredictionHistory } from '@/hooks/usePredictionHistory';
 
 export default function HistoryScreen() {
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const isFocused = useIsFocused();
-
-  const fetchPastPredictions = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const page = await replicate.predictions.list();
-      const results = (page?.results || []).filter((p) => p.output?.length > 0);
-      setPredictions(results);
-    } catch (error) {
-      console.error('Error fetching predictions:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const handleOnCopy = useCallback(async (output?: string) => {
-    if (output) {
-      await copyToClipboard(output);
-    }
-  }, []);
+  const { predictions, isLoading, fetchPastPredictions, handleOnCopy } =
+    usePredictionHistory();
 
   useEffect(() => {
     if (isFocused) {
@@ -54,7 +35,7 @@ export default function HistoryScreen() {
           <ActivityIndicator style={styles.loadingIndicator} />
         )}
 
-        {predictions.map((prediction, idx) => {
+        {predictions.map((prediction: Prediction, idx: number) => {
           const createdAt = parseFullDate(prediction.created_at);
 
           return (
@@ -63,6 +44,7 @@ export default function HistoryScreen() {
                 <Text style={styles.predictionOutput}>
                   {prediction?.output}
                 </Text>
+
                 <TouchableOpacity
                   style={styles.button}
                   accessibilityLabel='Copy prediction output'
