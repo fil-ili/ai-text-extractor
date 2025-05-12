@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 32,
     textAlign: 'center',
-    color: 'white',
+    color: 'black',
   },
   predictionOutput: {
     fontSize: 12,
-    color: 'white',
+    color: 'black',
     padding: 8,
   },
   button: {

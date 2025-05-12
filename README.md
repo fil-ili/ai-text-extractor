@@ -30,7 +30,7 @@ npm install
 ### 2. Create a .env file from the provided template
 
 ```bash
-cp .env.example .env
+cp .env.template .env
 ```
 
 Then fill in your Replicate API token:

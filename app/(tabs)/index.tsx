@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 32,
     textAlign: 'center',
-    color: 'white',
+    color: 'black',
   },
   loadingIndicator: {
     marginBottom: 20,
@@ -163,13 +163,15 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 12,
-    color: 'white',
+    color: 'black',
   },
   imageContainer: {
     alignItems: 'center',
     width: '100%',
     marginBottom: 32,
     borderRadius: 8,
+    borderColor: 'blue',
+    // borderTOp,
   },
   imagePreview: {
     width: '100%',
@@ -179,7 +181,7 @@ const styles = StyleSheet.create({
   },
   uploadImageHint: {
     fontSize: 20,
-    color: 'white',
+    color: 'black',
     fontWeight: 'bold',
   },
   fabContainer: {

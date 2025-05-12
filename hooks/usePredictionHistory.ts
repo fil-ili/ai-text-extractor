@@ -28,9 +28,9 @@ export function usePredictionHistory(): PredictionHistoryHook {
     }
   }, []);
 
-  const handleOnCopy = useCallback(async (output?: string) => {
+  const handleOnCopy = useCallback(async (output?: string | any) => {
     if (output) {
-      await copyToClipboard(output);
+      await copyToClipboard(JSON.stringify(output));
     }
   }, []);
 
